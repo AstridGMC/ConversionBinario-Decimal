@@ -1,0 +1,83 @@
+package Backend;
+import java.util.LinkedList;
+import java_cup.runtime.*;
+
+
+parser code 
+
+{:
+    public static String resultado= "";
+    LinkedList tablaErroresSintacticos =  new LinkedList();
+    public void syntax_error(Symbol s){
+        String lexema = s.value.toString();
+        int fila =  s.right;
+        int columna = s.left;
+        String red="\033[31m"; 
+        System.out.println(red + "ERROR SINTACTICO RECUPERADO!! \t\tLexema: " + lexema+ "\t\tFila " + fila +"\t\tColumna: " +columna+"simbolo"  );
+        ErrorS error = new ErrorS(lexema, fila, columna , "error Sintactico");
+        tablaErroresSintacticos.add(error);
+    }
+
+    public void unrrecovered_syntax_error(Symbol s) throws java.lang.Exception {
+        String lexema = s.value.toString();
+        int fila = s.right;
+        int columna = s.left;
+        String red="\033[31m"; 
+        System.out.println(red + "ERROR SINTACTICO SIN RECUPERACION!! \t\tLexema: " + lexema+ "\t\tFila " + fila +"\t\tColumna: " +columna );
+        ErrorS error = new ErrorS(lexema, fila, columna , "error Sintactico");
+        tablaErroresSintacticos.add(error);
+    }
+:}
+
+
+terminal        DIGITO, PUNTO;
+
+non terminal     S, E, N ,R ,D;
+
+start with S;
+
+S   ::=     N:res0 {:
+                    parser.resultado = Integer.parseInt(res0.toString());  
+                    RESULT = res0.toString(); 
+                    System.out.println( "Resultado" + res0.toString());
+                    :}
+;
+
+N   ::=     E: e R:d   {:
+                    String decimal1 = d.toString();
+                    String decimal= String.valueOf(e.toString()+"." +decimal1.substring(decimal1.indexOf('.') + 1));
+                    System.out.println(".......NNNN"+ decimal);
+                    RESULT =  decimal;
+                    :}
+            |E:e{:
+                    String decimal= String.valueOf(e.toString());
+                    RESULT =  decimal;
+                :}
+;
+
+E   ::=     E:res1 DIGITO:digito {: 
+                    RESULT=  Integer.parseInt(digito.toString()) + (Integer.parseInt(res1.toString())*2); 
+                    :}
+
+            |DIGITO:digito {:
+                    RESULT= (int)Integer.parseInt(digito.toString());
+                    :}
+            |error
+;
+
+R   ::=     PUNTO D:d {:              
+                    String resul= String.valueOf(d.getValor());          
+                    System.out.println("PUNTO ........."+ resul);
+                    RESULT = resul;
+                    :}
+;
+
+D   ::=     D:d DIGITO:digito{:
+                    Simbolo symb= new Simbolo(d.getValor()+ Double.parseDouble(digito.toString())*d.getMultiplicador(), d.getMultiplicador()/2);
+                    RESULT= symb;
+                    :}
+            |DIGITO: digito {:
+                    Simbolo symb= new Simbolo(Integer.parseInt(digito.toString())*0.5, 0.25);
+                    RESULT= symb;
+                    :}
+;
